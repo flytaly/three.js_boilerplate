@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import * as dat from 'dat.gui';
 
 export default class BaseSketch {
     constructor(selector, withOrbitControls = true) {
@@ -39,6 +40,14 @@ export default class BaseSketch {
 
     setupResize() {
         window.addEventListener('resize', this.resize.bind(this));
+    }
+
+    gui() {
+        this.gui = new dat.GUI();
+        this.settings = {
+            progress: 0,
+        };
+        this.gui.add(this.settings, 'progress', 0, 1, 0.01);
     }
 
     stop() {

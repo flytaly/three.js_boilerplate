@@ -106,4 +106,30 @@ export default class BaseSketch {
     render() {
         this.renderer.render(this.scene, this.camera);
     }
+
+    drawText({ text, fontFamily = 'Roboto', horizontalPadding = 0.75 } = {}) {
+        const texCanvas = document.createElement('canvas');
+        const texCtx = texCanvas.getContext('2d');
+        const idealCanvasSize = 2048;
+        const maxTextureSize = Math.min(this.renderer.capabilities.maxTextureSize, idealCanvasSize);
+        texCanvas.width = maxTextureSize;
+        texCanvas.height = maxTextureSize;
+
+        texCtx.fillStyle = '#bbb';
+        texCtx.fillRect(0, 0, texCanvas.width, texCanvas.height);
+        texCtx.fillStyle = '#000';
+        texCtx.strokeStyle = '#fff';
+        texCtx.lineWidth = 1;
+        texCtx.textAlign = 'center';
+        texCtx.textBaseline = 'middle';
+        const referenceFontSize = 250;
+        texCtx.font = `${referenceFontSize}px ${fontFamily}`;
+        const textWidth = texCtx.measureText(text).width;
+        const deltaWidth = (texCanvas.width * horizontalPadding) / textWidth;
+        const fontSise = referenceFontSize * deltaWidth;
+        texCtx.font = `${fontSise}px ${fontFamily}`;
+        texCtx.fillText(text, texCanvas.width / 2, texCanvas.height / 2);
+
+        return new THREE.CanvasTexture(texCanvas);
+    }
 }

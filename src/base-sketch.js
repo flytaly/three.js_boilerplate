@@ -19,12 +19,7 @@ export default class BaseSketch {
 
         this.container.appendChild(this.renderer.domElement);
 
-        this.camera = new THREE.PerspectiveCamera(
-            70, //
-            window.innerWidth / window.innerHeight,
-            0.001,
-            1000,
-        );
+        this.addCamera();
         this.camera.position.set(0, 0, 2);
         this.camera.lookAt(0, 0, 0);
 
@@ -36,6 +31,29 @@ export default class BaseSketch {
 
         this.setupResize();
         this.resize();
+    }
+
+    addCamera(isOrthographic = false) {
+        this.isOrthographic = isOrthographic;
+        const aspect = this.width / this.height;
+        if (!isOrthographic) {
+            this.camera = new THREE.PerspectiveCamera(
+                70, //
+                aspect,
+                0.001,
+                1000,
+            );
+            return;
+        }
+        this.frustumSize = 3;
+        this.camera = new THREE.OrthographicCamera(
+            (this.frustumSize * aspect) / -2,
+            (this.frustumSize * aspect) / 2,
+            this.frustumSize / 2,
+            this.frustumSize / -2,
+            0.3,
+            2000,
+        );
     }
 
     setupResize() {
@@ -66,13 +84,21 @@ export default class BaseSketch {
         this.width = this.container.offsetWidth;
         this.height = this.container.offsetHeight;
         this.renderer.setSize(this.width, this.height);
+        const aspect = this.width / this.height;
         this.camera.aspect = this.width / this.height;
 
-        if (this.material && this.material.uniforms.u_resolution) {
-            this.material.uniforms.u_resolution.value.x = this.width;
-            this.material.uniforms.u_resolution.value.y = this.height;
-            this.material.uniforms.u_resolution.value.z = this.width;
-            this.material.uniforms.u_resolution.value.w = this.height;
+        if (this.isOrthographic) {
+            this.camera.left = (-aspect * this.frustumSize) / 2;
+            this.camera.right = (aspect * this.frustumSize) / 2;
+            this.camera.top = this.frustumSize / 2;
+            this.camera.bottom = this.frustumSize / -2;
+        }
+
+        if (this.material && this.material.uniforms.uResolution) {
+            this.material.uniforms.uResolution.value.x = this.width;
+            this.material.uniforms.uResolution.value.y = this.height;
+            this.material.uniforms.uResolution.value.z = this.width;
+            this.material.uniforms.uResolution.value.w = this.height;
         }
         this.camera.updateProjectionMatrix();
     }
